@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <title>البوابة الإلكترونية والتحقق من الشهادات</title>
+    <base href="https://iam.ksu.edu.sa/"/>
+    <meta name="description" content="SSO, King Saud University, Single Sign On, SSO Portal, جامعة الملك سعود الدخول الموحد" />    
+    <link rel="stylesheet" type="text/css" href="assets/css/main.css"/>
+
+    <style>
+        /* ===== تنبيهات وتعليمات صفحة الدخول ===== */
+        .instructions {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        /* ===== CSS صفحة الشهادة والأنشطة ===== */
+        #certPage {
+            background-color: #eef0f3;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 30px 15px;
+            color: #333;
+        }
+
+        /* حاوية الشهادة الرئيسية */
+        .cert-card {
+            background: #ffffff;
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            border: 1px solid #d1d5db;
+            overflow: hidden; /* لضمان قص الهيدر الأسود مع زوايا الكارت */
+        }
+
+        /* 1. الهيدر الداكن العلوي داخل الكارت (المطابق للصورة) */
+        .card-dark-header {
+            background-color: #1b1c1e;
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 20px 25px;
+        }
+        .card-dark-header .kicker {
+            font-size: 0.9rem;
+            color: #e5e7eb;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .card-dark-header h2 {
+            font-size: 2rem;
+            margin: 0 0 10px 0;
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .card-dark-header .crumb {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+        .card-dark-header .crumb a {
+            color: #d1d5db;
+            text-decoration: none;
+        }
+
+        /* 2. شريط النافبار الأبيض تحت الجزء الأسود بالشعار الجديد */
+        .card-sub-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-sub-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card-sub-header .crest {
+            height: 42px;
+            width: auto;
+            object-fit: contain;
+        }
+        .card-sub-header .titles h1 {
+            font-size: 1rem;
+            margin: 0;
+            color: #1f2937;
+            font-weight: 700;
+        }
+        .card-sub-header .titles span {
+            font-size: 0.78rem;
+            color: #6b7280;
+        }
+        .card-sub-header nav.links a {
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* جسم الشهادة الداخلي */
+        .cert-body {
+            padding: 30px 35px;
+        }
+
+        /* الهيدر الخاص ببيانات الطالب (الصورة والشعار المعتقد) */
+        .cert-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 20px;
+        }
+        .student-info-group {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .cert-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+        .cert-header h4 {
+            margin: 0 0 4px 0;
+            font-size: 1.25rem;
+            color: #1f2937;
+            font-weight: 700;
+        }
+        .cert-sub {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .cert-badge {
+            display: inline-block;
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+        .cert-badge.blocked {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* شبكة بيانات الشهادة */
+        .cert-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 30px;
+            margin-bottom: 30px;
+        }
+        .cert-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .cert-item .k {
+            font-size: 0.82rem;
+            color: #6b7280;
+        }
+        .cert-item .v {
+            font-size: 0.98rem;
+            color: #111827;
+            font-weight: 700;
+        }
+
+        /* التوقيعات */
+        .cert-signatures {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid #f3f4f6;
+        }
+        .sig-line {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 0.88rem;
+        }
+        .sig-role {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        /* الأزرار */
+        .cert-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .btn-outline {
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-pdf {
+            background-color: #85754d;
+            border: none;
+            color: #ffffff;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* التصميم المحظور */
+        .blocked-box {
+            background-color: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .blocked-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #c53030;
+            margin-bottom: 8px;
+        }
+        .blocked-reason {
+            font-size: 0.88rem;
+            color: #742a2a;
+            margin-bottom: 15px;
+        }
+        .blocked-details {
+            background: #ffffff;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: right;
+            border: 1px solid #fed7d7;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dashed #edf2f7;
+            font-size: 0.85rem;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-value.danger { color: #e53e3e; font-weight: 700; }
+        .detail-value.archive { color: #d69e2e; font-weight: 700; }
+
+        #certPage footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body onload="setFocus();">
+
+<!-- ========== الجزء الأول: صفحة تسجيل الدخول الموحد ========== -->
+<div id="loginView" class="ping-container ping-signin login-template">
+    <div class="ping-header">
+        <span class="has-logo"><img src="./assets/images/logo-blue.png" alt="KSU"></span>
+        <div></div>
+        <div class="d-grid">
+            <div class="btn-group btn-group-toggle">
+                <a class="btn active" href="javascript:setPFLangCookie('ar-SA');">Arabic</a>
+                <a class="btn" href="javascript:setPFLangCookie('en-US');">English</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="ping-body-container">
+        <div>
+            <form id="verifyForm" method="POST" action="/as/4RskD18w5I/resume/as/authorization.ping" autocomplete="off">
+                <div class="ping-messages" id="verifyMsg"></div>
+
+                <div class="ping-input-label">الرقم الأكاديمي </div>
+                <div class="ping-input-container">
+                    <input id="nationalId" type="text" size="36" name="pf.username" autocorrect="off" autocapitalize="off" onKeyPress="return postOnReturn(event)" />
+                    <div class="place-bottom type-alert tooltip-text" id="username-text">
+                        <div class="icon">!</div>
+                        يرجى تعبئة هذا الحقل.
+                    </div>
+                </div>
+
+                <div class="ping-input-label">كلمة المرور</div>
+                <div class="ping-input-container password-container">
+                    <input id="password" type="password" size="36" name="pf.pass" onKeyPress="return postOnReturn(event)" />
+                    <div class="place-bottom type-alert tooltip-text" id="password-text">
+                        <div class="icon">!</div>
+                        يرجى تعبئة هذا الحقل.
+                    </div>
+                </div>
+
+                <div class="ping-buttons">
+                    <input type="hidden" name="pf.ok" value="" />
+                    <input type="hidden" name="pf.cancel" value="" />
+                    <span id="signOnButtonSpan">
+                        <a onclick="postOk();" class="ping-button normal allow" id="verifyBtn" title="تسجيل الدخول">
+                            <span class="btn-label">تسجيل الدخول / تحقق من الشهادة</span>
+                        </a>
+                    </span>
+                </div>
+
+                <div class="ping-input-link ping-pass-change account-actions">
+                    <a href="https://iam.ksu.edu.sa/ext/pwdchange/Identify?AdapterId=KSUSingleSignOnPasswordMGMT" class="password-change">تغيير كلمة المرور</a>
+                    <span class="divider">|</span>
+                    <a href="https://iam.ksu.edu.sa/ext/pwdreset/Identify?AdapterId=KSUSingleSignOnPasswordMGMT" class="forgot-password">نسيت كلمة المرور؟</a>
+                </div>
+
+                <div class="instructions">
+                    عزيزي عضو هيئة التدريس/الموظف: يجب تفعيل تطبيق التحقق الجديد لتتمكن من الوصول لأنظمة الجامعة وللمزيد نأمل زيارة الرابط: <a href="https://mfa.ksu.edu.sa">https://mfa.ksu.edu.sa</a>
+                </div>
+
+                <input type="hidden" name="pf.adapterId" id="pf.adapterId" value="SingleSignOn" />
+            </form>
+        </div>
+    </div>
+
+    <div class="ping-footer-container">
+        <div class="ping-footer">
+            <div class="ping-credit"></div>
+            <div class="ping-copyright">عمادة التعاملات الإلكترونية والاتصالات - <script type="text/javascript">document.write(new Date().getFullYear());</script></div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== الجزء الثاني: صفحة نتيجة التحقق المحدثة ========== -->
+<div id="certPage" hidden>
+  
+  <div class="cert-card">
+    <!-- 1. الهيدر الأسود في أعلى الكارت -->
+    <div class="card-dark-header">
+      <span class="kicker">نظام التحقق الإلكتروني</span>
+      <h2>نتيجة التحقق من الشهادة</h2>
+      <div class="crumb">
+        <a id="backToHomeCrumb" style="cursor:pointer;">الرئيسية</a> / نتيجة التحقق
+      </div>
+    </div>
+
+  <!-- 1. الهيدر الأسود العلوي مع مسافة كافية لعدم القص -->
+  <div class="card-dark-header" style="padding: 15px 20px;">
+    <span class="kicker">نظام التحقق الإلكتروني</span>
+    <h2>نتيجة التحقق من الشهادة</h2>
+    <div class="crumb">
+      <a id="backToHomeCrumb" style="cursor:pointer;">الرئيسية</a> / نتيجة التحقق
+    </div>
+  </div>
+
+  <!-- 2. الشريط الأبيض بشعار الجامعة مفرّغ بمساحات إضافية لضمان ظهوره كاملاً -->
+  <div class="card-sub-header" style="background-color: #ffffff; padding: 25px 20px; margin-top: 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <div class="brand" style="display: flex; align-items: center; gap: 15px;">
+      <img class="crest" src="./assets/images/logo-blue.png" alt="شعار جامعة الملك سعود" style="height: 60px; width: auto; object-fit: contain; display: block;">
+      <div class="titles">
+        <h1 style="margin: 0 0 5px 0; font-size: 20px; color: #1f2937; font-weight: bold;">بوابة جامعة الملك سعود</h1>
+        <span style="font-size: 14px; color: #4b5563; display: block;">https://iam.ksu.edu.sa</span>
+      </div>
+    </div>
+    <nav class="links">
+      <a id="backToHomeNav" style="cursor:pointer; color: #1f2937; font-size: 15px; text-decoration: none; font-weight: 500;">العودة للرئيسية</a>
+    </nav>
+  </div>
+    <!-- 3. محتوى الشهادة الداخلي -->
+    <div class="cert-body">
+      <!-- محتوى الشهادة العادية -->
+      <div id="normalCertContent">
+        <div class="cert-header">
+          <div class="student-info-group">
+<img class="cert-photo" id="certPhoto" src="https://files.catbox.moe/ux33z9.jpeg" alt="صورة الطالب">
+            <div>
+              <h4 id="certName"></h4>
+              <span class="cert-sub" id="certCollege"></span>
+            </div>
+          </div>
+          <span class="cert-badge">✅ الشهادة معتمدة</span>
+        </div>
+
+        <div class="cert-grid" id="certGrid"></div>
+
+        <div class="cert-signatures" id="certSign"></div>
+
+        <div class="cert-actions" id="certActions">
+          <button type="button" class="btn-outline" id="verifyAgain">التحقق من شهادة أخرى</button>
+          <button type="button" class="btn-pdf" id="pdfBtn">📄 التحقق من الشهادة PDF</button>
+        </div>
+
+        <div class="pending-box" id="pendingBox" hidden style="margin-top:15px; text-align:center; color:#85754d;">
+          <div style="font-weight:600; font-size:0.9rem;">⏳ طلب استخراج الشهادة بصيغة PDF قيد المراجعة حاليًا.</div>
+          <div class="ref" id="pendingRef" style="font-weight:700; margin-top:4px;"></div>
+        </div>
+      </div>
+
+      <!-- محتوى الشهادة المحظورة -->
+      <div id="blockedCertContent" hidden>
+        <div class="cert-header">
+          <div class="student-info-group">
+            <img class="cert-photo" id="blockedPhoto" src="" alt="صورة الطالب">
+            <div>
+              <h4 id="blockedName"></h4>
+              <span class="cert-sub" id="blockedCollege"></span>
+            </div>
+          </div>
+          <span class="cert-badge blocked" id="blockedBadge">🚫 الطالب محظور القيد</span>
+        </div>
+        
+        <div class="blocked-box">
+          <div class="blocked-title">الشهادة غير معتمدة</div>
+          <div class="blocked-reason">
+            لا يمكن استخراج الشهادة لأن ملف الطالب <strong>غير معتمد</strong> بسبب عدم سداد المصاريف الدراسية المستحقة.
+          </div>
+          <div class="blocked-details">
+            <div class="detail-row">
+              <span>اسم الطالب:</span>
+              <span id="blockedDetailName"></span>
+            </div>
+            <div class="detail-row">
+              <span>الرقم القومي:</span>
+              <span id="blockedDetailId"></span>
+            </div>
+            <div class="detail-row">
+              <span>الكلية:</span>
+              <span id="blockedDetailCollege"></span>
+            </div>
+            <div class="detail-row">
+              <span>حالة القيد:</span>
+              <span class="detail-value danger">محظور</span>
+            </div>
+            <div class="detail-row">
+              <span>حالة الملف:</span>
+              <span class="detail-value archive">مؤرشف</span>
+            </div>
+          </div>
+        </div>
+        <div class="cert-actions" style="margin-top:20px;">
+          <button type="button" class="btn-outline" id="verifyAgainBlocked">التحقق من شهادة أخرى</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-bottom">© 2026 بوابة الجامعة — جميع الحقوق محفوظة.</div>
+  </footer>
+</div>
+
+<!-- ========== البرمجيات المدمجة (JavaScript) ========== -->
+<script type="text/javascript">
+  const CLIENT_1 = {
+    nationalId: '441108923',
+    password: 'Ksu#1400@ABDULKARIM',
+    photo: 'https://files.catbox.moe/ux33z9.jpeg',
+    name: 'عبدالكريم بن سليمان بن عبدالكريم الجمعه',
+    college: 'كلية الحقوق والعلوم السياسية  – جامعة  الملك سعود ',
+    fields: {
+      'تاريخ الميلاد': '01/09/1400',
+      'مكان الميلاد': ' بريدة  ',
+      'السجل المدني  ': '1055056590',
+      'الجنسية': 'سعودي',
+      'المؤهل': 'ماجستير قانون',
+      'الكلية': '     كلية الحقوق والعلوم السياسية – جامعة  الملك سعود ',
+      'التخصص والترقية': ' القانون الدولي ',
+      'نظام الدراسة': 'الساعات المعتمدة',
+      'لغة الدراسة': 'اللغة العربية  ',
+      'عدد سنوات الدراسة بالكلية': '4 سنوات',
+      'الرقم الأكاديمي ': '439102845',
+      'دور التخرج': '   الفصل الدراسي الثاني   ',
+      'سنة التخرج': '1443',
+      'المجموع': ' 4.53/5   ',
+      'التقدير العام': ' ممتاز',
+      'النسبة المئوية': '90.6%'
+    },
+    signatures: [
+      { name: 'أ.د. عبداللطيف بن محمد آل الشيخ', role: 'عميد الكلية' },
+      { name: 'أ.د.أحمد بن سعيد الخبتي ', role: 'وكيل الكلية لشؤون التعليم والطلاب' },
+      { name: 'أ.د.عثمان بن طاهر طالبي', role: 'وكيل الكلية للدراسات العليا والبحوث' }
+    ]
+  };
+
+  const CLIENT_2 = {
+    nationalId: '441108923',
+    password: '1122',
+    photo: 'https://files.catbox.moe/ux33z9.jpeg',
+    name: 'علاء خالد محمد قنديل',
+    college: 'كلية التجارة – جامعة الملك سعود',
+    blocked: true,
+    archiveStatus: 'مؤرشف',
+    blockReason: 'عدم سداد المصاريف الدراسية',
+    enrollmentStatus: 'محظور',
+    fields: {
+      'تاريخ الميلاد': '07/12/1985',
+      ' الرقم الأكاديمي': '441108923',
+      'الجنسية': 'مصري',
+      'المؤهل': 'بكالوريوس تجارة',
+      'الكلية': ' ماجستير قانون - جامعة الملك سعود',
+      'التخصص': ' القانون الدولي',
+      'نظام الدراسة': ' ساعات معتمدة',
+      'لغة الدراسة': 'العربية',
+      'سنة التخرج': '2022',
+      'التقدير العام': 'جيد جدًا',
+      'المعدل التراكمي': ' 4.53/5',
+      'حالة القيد': 'محظور',
+      'حالة الملف': 'مؤرشف'
+    }
+  };
+
+  const ALL_CLIENTS = [CLIENT_1, CLIENT_2];
+
+  const loginView = document.getElementById('loginView');
+  const certPage = document.getElementById('certPage');
+  const certGrid = document.getElementById('certGrid');
+  const certSign = document.getElementById('certSign');
+  const pdfBtn = document.getElementById('pdfBtn');
+  const pendingBox = document.getElementById('pendingBox');
+  const pendingRef = document.getElementById('pendingRef');
+
+  const normalCertContent = document.getElementById('normalCertContent');
+  const blockedCertContent = document.getElementById('blockedCertContent');
+
+  function digitsOnly(str){ return str.replace(/[^0-9]/g, ''); }
+
+  function postOk() {
+    const userInput = document.getElementById('nationalId').value.trim();
+    const passInput = document.getElementById('password').value;
+
+    const userTextErr = document.getElementById('username-text');
+    const passTextErr = document.getElementById('password-text');
+
+    userTextErr.className = 'place-bottom type-alert tooltip-text';
+    passTextErr.className = 'place-bottom type-alert tooltip-text';
+
+    if (userInput === '') {
+      userTextErr.className += ' show';
+      return;
+    }
+    if (passInput === '') {
+      passTextErr.className += ' show';
+      return;
+    }
+
+    submitForm();
+  }
+
+  function submitForm() {
+    const signOnButtonSpan = document.getElementById('signOnButtonSpan');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const labelSpan = verifyBtn.querySelector('.btn-label');
+
+    signOnButtonSpan.classList.add('content-columns', 'disabled');
+    signOnButtonSpan.style.pointerEvents = 'none';
+    if(labelSpan) labelSpan.innerHTML = 'جاري التحقق والتسجيل...';
+
+    setTimeout(() => {
+      signOnButtonSpan.classList.remove('content-columns', 'disabled');
+      signOnButtonSpan.style.pointerEvents = 'auto';
+      if(labelSpan) labelSpan.innerHTML = 'تسجيل الدخول / تحقق من الشهادة';
+
+      const nationalId = digitsOnly(document.getElementById('nationalId').value.trim());
+      const password = document.getElementById('password').value;
+
+      const client = ALL_CLIENTS.find(c => digitsOnly(c.nationalId) === nationalId && c.password === password);
+
+      if(!client){
+        alert('بيانات الدخول غير صحيحة، أو لا توجد شهادة مرتبطة بهذا الرقم.');
+        return;
+      }
+
+      if(client.blocked){
+        renderBlockedCertificate(client);
+      } else {
+        renderCertificate(client);
+      }
+      goToCertPage();
+    }, 900);
+  }
+
+  function renderCertificate(rec){
+    normalCertContent.hidden = false;
+    blockedCertContent.hidden = true;
+
+    document.getElementById('certPhoto').src = rec.photo;
+    document.getElementById('certName').textContent = rec.name;
+    document.getElementById('certCollege').textContent = rec.college;
+
+    certGrid.innerHTML = '';
+    Object.entries(rec.fields).forEach(([k, v]) => {
+      const item = document.createElement('div');
+      item.className = 'cert-item';
+      item.innerHTML = '<span class="k">' + k + '</span><span class="v">' + v + '</span>';
+      certGrid.appendChild(item);
+    });
+
+    certSign.innerHTML = '';
+    rec.signatures.forEach(s => {
+      const div = document.createElement('div');
+      div.innerHTML = '<div class="sig-line">' + s.name + '</div><div class="sig-role">' + s.role + '</div>';
+      certSign.appendChild(div);
+    });
+
+    pendingBox.hidden = true;
+    pdfBtn.disabled = false;
+    pdfBtn.innerHTML = '📄 التحقق من الشهادة PDF';
+  }
+
+  function renderBlockedCertificate(rec){
+    normalCertContent.hidden = true;
+    blockedCertContent.hidden = false;
+
+    document.getElementById('blockedPhoto').src = rec.photo;
+    document.getElementById('blockedName').textContent = rec.name;
+    document.getElementById('blockedCollege').textContent = rec.college;
+
+    document.getElementById('blockedDetailName').textContent = rec.name;
+    document.getElementById('blockedDetailId').textContent = rec.nationalId;
+    document.getElementById('blockedDetailCollege').textContent = rec.college;
+  }
+
+  function goToCertPage(){
+    loginView.hidden = true;
+    certPage.hidden = false;
+    window.scrollTo(0, 0);
+  }
+
+  function goToHome(){
+    certPage.hidden = true;
+    loginView.hidden = false;
+    document.getElementById('verifyForm').reset();
+    window.scrollTo(0, 0);
+  }
+
+  document.getElementById('verifyAgain').addEventListener('click', goToHome);
+  document.getElementById('verifyAgainBlocked').addEventListener('click', goToHome);
+  document.getElementById('backToHomeNav').addEventListener('click', goToHome);
+  document.getElementById('backToHomeCrumb').addEventListener('click', goToHome);
+
+  pdfBtn.addEventListener('click', () => {
+    pdfBtn.disabled = true;
+    pdfBtn.innerHTML = '⏳ جارٍ الإرسال...';
+
+    setTimeout(() => {
+      pdfBtn.innerHTML = '⏳ قيد المراجعة';
+      const ref = 'REQ-' + Math.floor(100000 + Math.random() * 900000);
+      pendingRef.textContent = 'رقم الطلب المرجعي: ' + ref;
+      pendingBox.hidden = false;
+    }, 700);
+  });
+
+  function postOnReturn(e) {
+    var keycode = window.event ? window.event.keyCode : (e ? e.which : null);
+    if (keycode == 13) {
+      postOk();
+      return false;
+    }
+    return true;
+  }
+
+  function setFocus() {
+    var platform = navigator.platform;
+    if (platform != null && platform.indexOf("iPhone") == -1) {
+      var usernameEl = document.getElementById('nationalId');
+      if(usernameEl) usernameEl.focus();
+    }
+  }
+
+  function setPFLangCookie(localestr){
+    if(localestr != "en-US") localestr = "ar-SA";
+    var date = new Date();
+    document.cookie="pf-accept-language="+localestr+"; expires=" + date.setDate(date.getDate() + 1) +"; path=/";
+    window.location.reload();
+  }
+</script>
+
+</body>
+</html>
